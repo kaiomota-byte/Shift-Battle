@@ -3,24 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shift Battle X</title>
+    <title>Shift Battle X - Training Edition</title>
     <style>
-        body { 
-            margin: 0; 
-            padding: 0; 
-            background-color: #020205; 
-            overflow: hidden; 
-            font-family: Arial, sans-serif;
-        }
-        canvas { 
-            display: block; 
-        }
+        body { margin: 0; padding: 0; background-color: #020205; overflow: hidden; font-family: Arial, sans-serif; }
+        canvas { display: block; }
     </style>
 </head>
 <body>
-
     <script>
-    // --- COLE O CÓDIGO ABAIXO DENTRO DO SEU ARQUIVO ---
     (function() {
         const oldCanvas = document.querySelector('canvas');
         if (oldCanvas) oldCanvas.remove();
@@ -36,9 +26,13 @@
         window.addEventListener('resize', setupCanvas);
         setupCanvas();
 
+        // --- AJUSTES DE VELOCIDADE (NERFADOS) ---
         const BALL_RADIUS = 22;
-        const GRAVITY = 0.15;
-        const FRICTION = 0.98;
+        const GRAVITY = 0.12;
+        const FRICTION = 0.97;
+        const MOVE_SPEED = 0.5;
+        const ROTATION_SPEED = 0.12;
+        
         const CLASS_LIST = ['SWORD', 'WRENCH', 'BOMBERMAN', 'SHIELD', 'SNIPER', 'RAPIER', 'POISON'];
         
         const CLASS_COLORS = {
@@ -49,7 +43,8 @@
             'SNIPER': { bg: '#ffcc00', text: '#000' },
             'RAPIER': { bg: '#ffffff', text: '#000' },
             'POISON': { bg: '#8800ff', text: '#fff' },
-            'VOID': { bg: '#000000', text: '#a200ff', border: '#a200ff' }
+            'VOID': { bg: '#000000', text: '#a200ff', border: '#a200ff' },
+            'TRAINING': { bg: '#333', text: '#fff', border: '#555' }
         };
 
         let gameState = 'MENU';
@@ -67,8 +62,10 @@
                 if (e.key.toLowerCase() === 's') p1Index = (p1Index + 1) % CLASS_LIST.length;
                 if (e.key === 'ArrowUp') p2Index = (p2Index - 1 + CLASS_LIST.length) % CLASS_LIST.length;
                 if (e.key === 'ArrowDown') p2Index = (p2Index + 1) % CLASS_LIST.length;
-                if (e.key === '1') p1Index = -1; 
-                if (e.key === '9') p2Index = -1;
+                if (e.key === '1') p1Index = -1; // VOID
+                if (e.key === '2') p1Index = -2; // TREINO P1
+                if (e.key === '9') p2Index = -1; // VOID
+                if (e.key === '0') p2Index = -2; // TREINO P2
                 if (e.key.toLowerCase() === 'm') controlMode = (controlMode === 'MANUAL' ? 'AUTO' : 'MANUAL');
                 if (e.code === 'Space') startGame();
             }
@@ -84,8 +81,12 @@
         function startGame() {
             const arena = getArena();
             entities = { bullets: [], pools: [], bombs: [], explosions: [], turrets: [] };
-            bAzul = new Ball(arena.x + 100, arena.y + arena.h/2, "#00f2ff", p1Index === -1 ? 'VOID' : CLASS_LIST[p1Index], true);
-            bVermelha = new Ball(arena.x + arena.w - 100, arena.y + arena.h/2, "#ff0055", p2Index === -1 ? 'VOID' : CLASS_LIST[p2Index], false);
+            
+            let type1 = p1Index === -1 ? 'VOID' : (p1Index === -2 ? 'TRAINING' : CLASS_LIST[p1Index]);
+            let type2 = p2Index === -1 ? 'VOID' : (p2Index === -2 ? 'TRAINING' : CLASS_LIST[p2Index]);
+
+            bAzul = new Ball(arena.x + 100, arena.y + arena.h/2, "#00f2ff", type1, true);
+            bVermelha = new Ball(arena.x + arena.w - 100, arena.y + arena.h/2, "#ff0055", type2, false);
             gameState = 'PLAYING';
         }
 
@@ -95,30 +96,34 @@
         class Ball {
             constructor(x, y, color, type, isP1) {
                 this.x = x; this.y = y; this.type = type; this.isP1 = isP1;
-                this.color = color;
-                this.hp = type === 'VOID' ? 100 : 50;
-                this.vx = controlMode === 'AUTO' ? (Math.random() > 0.5 ? 5 : -5) : 0;
-                this.vy = controlMode === 'AUTO' ? (Math.random() > 0.5 ? 5 : -5) : 0;
+                this.color = (type === 'TRAINING') ? '#555' : color;
+                this.hp = (type === 'VOID') ? 100 : (type === 'TRAINING' ? 999999 : 50);
+                this.totalDamageTaken = 0;
+                this.vx = 0; this.vy = 0;
                 this.weaponAngle = 0;
                 this.ultCharge = 0;
                 this.lastAction = 0;
                 this.isBesta = false;
             }
 
-            takeDamage(dmg) { this.hp -= dmg; }
+            takeDamage(dmg) { 
+                this.hp -= dmg; 
+                if(this.type === 'TRAINING') this.totalDamageTaken += dmg;
+            }
 
             useUltimate() {
-                if (this.ultCharge < 1 && this.type !== 'VOID') return;
+                if (this.ultCharge < 1 && this.type !== 'VOID' && this.type !== 'TRAINING') return;
                 const enemy = (this === bAzul) ? bVermelha : bAzul;
                 this.ultCharge = 0;
                 if (this.type === 'SWORD') { this.isBesta = true; setTimeout(() => this.isBesta = false, 5000); }
                 if (this.type === 'VOID') { enemy.takeDamage(15); enemy.x = canvas.width/2; this.ultCharge = 1; }
+                if (this.type === 'TRAINING') { this.ultCharge = 1; this.hp = 999999; this.totalDamageTaken = 0; }
                 if (this.type === 'BOMBERMAN') { for(let i=0; i<12; i++) entities.bombs.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, timer: 50, owner: this}); }
                 if (this.type === 'WRENCH') { for(let i=0;i<6;i++){ let a=(Math.PI*2/6)*i; entities.turrets.push({x:enemy.x+Math.cos(a)*120, y:enemy.y+Math.sin(a)*120, angle:0, lastShot:0, owner:this, ammo:3, teleguied:true});}}
-                if (this.type === 'SNIPER') { entities.bullets.push({x:this.x, y:this.y, vx:Math.cos(this.weaponAngle)*35, vy:Math.sin(this.weaponAngle)*35, owner:this, isSuper:true}); }
+                if (this.type === 'SNIPER') { entities.bullets.push({x:this.x, y:this.y, vx:Math.cos(this.weaponAngle)*25, vy:Math.sin(this.weaponAngle)*25, owner:this, isSuper:true}); }
                 if (this.type === 'RAPIER' || this.type === 'SHIELD' || this.type === 'POISON') {
                     let a = Math.atan2(enemy.y - this.y, enemy.x - this.x);
-                    this.vx = Math.cos(a) * 30; this.vy = Math.sin(a) * 30;
+                    this.vx = Math.cos(a) * 22; this.vy = Math.sin(a) * 22;
                     if(this.type === 'POISON') this.poisonUlt = 120;
                 }
             }
@@ -133,14 +138,14 @@
                     else { if(keys['ArrowUp'])dy--; if(keys['ArrowDown'])dy++; if(keys['ArrowLeft'])dx--; if(keys['ArrowRight'])dx++; }
                     if (dx !== 0 || dy !== 0) {
                         let a = Math.atan2(dy, dx);
-                        this.vx += Math.cos(a) * 0.7; this.vy += Math.sin(a) * 0.7;
+                        this.vx += Math.cos(a) * MOVE_SPEED; this.vy += Math.sin(a) * MOVE_SPEED;
                         if(weaponBehavior === 'DIRECTIONAL') this.weaponAngle = a;
                     }
                     this.vy += GRAVITY;
                     this.vx *= FRICTION; this.vy *= FRICTION;
                 }
 
-                if(weaponBehavior === 'SPIN') this.weaponAngle += 0.18;
+                if(weaponBehavior === 'SPIN') this.weaponAngle += ROTATION_SPEED;
                 this.x += this.vx; this.y += this.vy;
 
                 if (this.x < arena.x + BALL_RADIUS) { this.x = arena.x + BALL_RADIUS; this.vx *= -1; }
@@ -148,47 +153,32 @@
                 if (this.y < arena.y + BALL_RADIUS) { this.y = arena.y + BALL_RADIUS; this.vy *= -1; }
                 if (this.y > arena.y + arena.h - BALL_RADIUS) { this.y = arena.y + arena.h - BALL_RADIUS; this.vy *= -1; }
 
-                if (this.type === 'SNIPER' && Date.now() - this.lastAction > 1500) {
+                if (this.type === 'SNIPER' && Date.now() - this.lastAction > 1800) {
                     let a = Math.atan2(enemy.y-this.y, enemy.x-this.x);
-                    entities.bullets.push({x:this.x, y:this.y, vx:Math.cos(a)*25, vy:Math.sin(a)*25, owner:this});
+                    entities.bullets.push({x:this.x, y:this.y, vx:Math.cos(a)*18, vy:Math.sin(a)*18, owner:this});
                     this.lastAction = Date.now();
                 }
-                if (this.type === 'BOMBERMAN' && Math.random() < 0.015) { entities.bombs.push({x: this.x, y: this.y, timer: 60, owner: this}); }
-                if (this.type === 'POISON' && (this.poisonUlt > 0 || Math.random() < 0.25)) {
+                if (this.type === 'BOMBERMAN' && Math.random() < 0.01) { entities.bombs.push({x: this.x, y: this.y, timer: 70, owner: this}); }
+                if (this.type === 'POISON' && (this.poisonUlt > 0 || Math.random() < 0.15)) {
                     entities.pools.push({x: this.x, y: this.y, timer: 180, owner: this});
                     if(this.poisonUlt > 0) this.poisonUlt--;
                 }
 
-                this.ultCharge = Math.min(1, this.ultCharge + 0.0035);
+                this.ultCharge = Math.min(1, this.ultCharge + 0.0025);
 
                 let weaponLen = this.type === 'RAPIER' ? 55 : 45;
                 let tx = this.x + Math.cos(this.weaponAngle) * weaponLen;
                 let ty = this.y + Math.sin(this.weaponAngle) * weaponLen;
 
                 if (Math.hypot(tx - enemy.x, ty - enemy.y) < BALL_RADIUS + 12) {
-                    let push = this.type === 'SHIELD' ? 15 : 5;
+                    let push = this.type === 'SHIELD' ? 12 : 4;
                     let a = Math.atan2(enemy.y - this.y, enemy.x - this.x);
                     enemy.vx += Math.cos(a) * push; enemy.vy += Math.sin(a) * push;
-                    if (Date.now() - this.lastAction > 400) {
+                    if (Date.now() - this.lastAction > 500) {
                         enemy.takeDamage(this.type === 'SHIELD' ? 8 : (this.isBesta ? 15 : 6));
                         if(this.type === 'WRENCH') entities.turrets.push({x: tx, y: ty, angle: 0, lastShot: 0, owner: this, ammo: -1, teleguied: true});
                         this.lastAction = Date.now();
                     }
-                }
-
-                if (this.type === 'SHIELD') {
-                    let enemyWeaponLen = 45;
-                    let etx = enemy.x + Math.cos(enemy.weaponAngle) * enemyWeaponLen;
-                    let ety = enemy.y + Math.sin(enemy.weaponAngle) * enemyWeaponLen;
-                    if (Math.hypot(tx - etx, ty - ety) < 25) {
-                        enemy.vx -= Math.cos(this.weaponAngle) * 10;
-                        enemy.vy -= Math.sin(this.weaponAngle) * 10;
-                    }
-                    entities.bullets.forEach(b => {
-                        if(b.owner !== this && Math.hypot(tx - b.x, ty - b.y) < 25) {
-                            b.vx *= -1.2; b.vy *= -1.2; b.owner = this;
-                        }
-                    });
                 }
             }
 
@@ -200,7 +190,12 @@
                 ctx.strokeStyle = "#fff"; ctx.lineWidth = this.isBesta ? 5 : 2; ctx.stroke();
                 ctx.shadowBlur = 0;
                 ctx.fillStyle = "#fff"; ctx.font = "bold 14px Arial"; ctx.textAlign = "center";
-                ctx.fillText(Math.ceil(this.hp), this.x, this.y + 5);
+                
+                // Indicador de vida ou Dano no Treino
+                let displayText = (this.type === 'TRAINING') ? `DPS: ${this.totalDamageTaken.toFixed(1)}` : Math.ceil(this.hp);
+                ctx.fillText(displayText, this.x, this.y - 30);
+                if(this.type !== 'TRAINING') ctx.fillText(Math.ceil(this.hp), this.x, this.y + 5);
+
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.weaponAngle);
                 ctx.shadowBlur = 20; ctx.shadowColor = this.color;
@@ -245,7 +240,7 @@
                     let target = enemy(b.owner);
                     let a = Math.atan2(target.y - b.y, target.x - b.x);
                     let currentA = Math.atan2(b.vy, b.vx);
-                    let newA = currentA + (a - currentA) * 0.08;
+                    let newA = currentA + (a - currentA) * 0.05; 
                     let speed = Math.hypot(b.vx, b.vy);
                     b.vx = Math.cos(newA) * speed;
                     b.vy = Math.sin(newA) * speed;
@@ -265,7 +260,7 @@
                 ctx.fillStyle = "rgba(170, 0, 255, 0.3)";
                 ctx.beginPath(); ctx.arc(p.x, p.y, 40, 0, 7); ctx.fill();
                 let vic = enemy(p.owner);
-                if(Math.hypot(p.x - vic.x, p.y - vic.y) < 40) vic.takeDamage(0.18);
+                if(Math.hypot(p.x - vic.x, p.y - vic.y) < 40) vic.takeDamage(0.12);
                 p.timer--; if(p.timer <= 0) entities.pools.splice(i, 1);
             });
 
@@ -291,14 +286,14 @@
             entities.turrets.forEach((t, i) => {
                 let target = enemy(t.owner);
                 if(t.teleguied) t.angle = Math.atan2(target.y - t.y, target.x - t.x);
-                else t.angle += 0.1;
+                else t.angle += 0.08;
                 
                 ctx.save(); ctx.translate(t.x, t.y); ctx.rotate(t.angle);
                 ctx.fillStyle = "orange"; ctx.beginPath(); ctx.arc(0, 0, 10, 0, 7); ctx.fill();
                 ctx.fillStyle = "#fff"; ctx.fillRect(8, -2, 6, 4); ctx.restore();
                 
-                if(Date.now() - t.lastShot > 800) {
-                    entities.bullets.push({x:t.x, y:t.y, vx:Math.cos(t.angle)*12, vy:Math.sin(t.angle)*12, owner:t.owner});
+                if(Date.now() - t.lastShot > 1000) {
+                    entities.bullets.push({x:t.x, y:t.y, vx:Math.cos(t.angle)*10, vy:Math.sin(t.angle)*10, owner:t.owner});
                     t.lastShot = Date.now();
                     if(t.ammo !== -1) { 
                         t.ammo--; 
@@ -317,38 +312,39 @@
 
             const drawSide = (x, current, title, baseCol) => {
                 ctx.fillStyle = baseCol; ctx.font = "300 24px Arial"; ctx.fillText(title, x + 110, 230);
-                
                 CLASS_LIST.forEach((name, i) => {
                     const isSel = (current === i);
                     const colors = CLASS_COLORS[name];
-                    
                     ctx.fillStyle = isSel ? colors.bg : "#111";
                     ctx.fillRect(x, 250 + i*42, 220, 38);
-                    
                     if(isSel && colors.border) {
                         ctx.strokeStyle = colors.border;
                         ctx.lineWidth = 2;
                         ctx.strokeRect(x, 250 + i*42, 220, 38);
                     }
-
                     ctx.fillStyle = isSel ? colors.text : "#777";
                     ctx.font = "300 18px Arial";
                     ctx.fillText(isSel ? `>> ${name} <<` : name, x + 110, 275 + i*42);
                 });
-
+                
+                // VOID [1/9]
                 const isVoid = (current === -1);
                 const vColors = CLASS_COLORS['VOID'];
                 ctx.fillStyle = isVoid ? vColors.bg : "#111";
                 ctx.fillRect(x, 250 + 7*42, 220, 38);
-                if(isVoid) {
-                    ctx.strokeStyle = vColors.border;
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(x, 250 + 7*42, 220, 38);
-                }
+                if(isVoid) { ctx.strokeStyle = vColors.border; ctx.lineWidth = 2; ctx.strokeRect(x, 250 + 7*42, 220, 38); }
                 ctx.fillStyle = isVoid ? vColors.text : "#777";
-                ctx.fillText(isVoid ? ">> VOID <<" : "VOID", x + 110, 275 + 7*42); 
-            };
+                ctx.fillText(isVoid ? ">> VOID <<" : "VOID [1/9]", x + 110, 275 + 7*42); 
 
+                // TREINO [2/0]
+                const isTrain = (current === -2);
+                const tColors = CLASS_COLORS['TRAINING'];
+                ctx.fillStyle = isTrain ? tColors.bg : "#111";
+                ctx.fillRect(x, 250 + 8*42, 220, 38);
+                if(isTrain) { ctx.strokeStyle = tColors.border; ctx.lineWidth = 2; ctx.strokeRect(x, 250 + 8*42, 220, 38); }
+                ctx.fillStyle = isTrain ? tColors.text : "#777";
+                ctx.fillText(isTrain ? ">> TRAINING <<" : "TRAINING [2/0]", x + 110, 275 + 8*42); 
+            };
             drawSide(canvas.width*0.18, p1Index, "AZUL P1", "#00f2ff");
             drawSide(canvas.width*0.58, p2Index, "VERMELHA P2", "#ff0055");
         }
@@ -368,7 +364,7 @@
                     ctx.fillStyle = cfg[0].ultCharge >= 1 ? "#fff" : cfg[2];
                     ctx.fillRect(cfg[1], arena.y + arena.h * (1 - cfg[0].ultCharge), 25, arena.h * cfg[0].ultCharge);
                 });
-                if (bAzul.hp <= 0 || bVermelha.hp <= 0) resetToMenu();
+                if ((bAzul.hp <= 0 && bAzul.type !== 'TRAINING') || (bVermelha.hp <= 0 && bVermelha.type !== 'TRAINING')) resetToMenu();
             }
             requestAnimationFrame(loop);
         }
