@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shift Battle X - Dynamic UI</title>
+    <title>Shift Battle X - Balance Update</title>
     <style>
         body { margin: 0; padding: 0; background-color: #020205; overflow: hidden; font-family: Arial, sans-serif; cursor: default; }
         canvas { display: block; }
@@ -185,7 +185,8 @@
                     let psh = this.type === 'SHIELD' ? 12 : 4, a = Math.atan2(enemy.y - this.y, enemy.x - this.x);
                     enemy.vx += Math.cos(a) * psh; enemy.vy += Math.sin(a) * psh;
                     if (Date.now() - this.lastAction > 500) {
-                        enemy.takeDamage(this.type === 'SHIELD' ? 8 : (this.isBesta ? 15 : 6));
+                        // DANO DA CHAVE DE FENDA REDUZIDO PARA 3
+                        enemy.takeDamage(this.type === 'SHIELD' ? 8 : (this.isBesta ? 15 : (this.type === 'WRENCH' ? 3 : 6)));
                         if(this.type === 'WRENCH') entities.turrets.push({x: tx, y: ty, angle: 0, lastShot: 0, owner: this, ammo: -1, teleguied: true});
                         this.lastAction = Date.now();
                     }
@@ -264,7 +265,8 @@
             });
             entities.pools.forEach((p, i) => {
                 ctx.fillStyle = "rgba(170, 0, 255, 0.2)"; ctx.beginPath(); ctx.arc(p.x, p.y, 40, 0, 7); ctx.fill();
-                let vic = enemy(p.owner); if(Math.hypot(p.x - vic.x, p.y - vic.y) < 40) vic.takeDamage(0.12);
+                // DANO DA POISON REDUZIDO PARA 0.03
+                let vic = enemy(p.owner); if(Math.hypot(p.x - vic.x, p.y - vic.y) < 40) vic.takeDamage(0.03);
                 p.timer--; if(p.timer <= 0) entities.pools.splice(i, 1);
             });
             entities.bombs.forEach((b, i) => {
@@ -284,11 +286,11 @@
                 ctx.save(); ctx.translate(t.x, t.y); ctx.rotate(t.angle); ctx.fillStyle = "orange";
                 ctx.beginPath(); ctx.arc(0, 0, 10, 0, 7); ctx.fill(); ctx.fillStyle = "#fff"; ctx.fillRect(8, -2, 6, 4); ctx.restore();
                 
-                // REATIVADA COLISÃO DA TORRETA COM JOGADORES
+                // DANO DE CONTATO DAS TORRETAS REMOVIDO (Só mantém o kick visual de repulsão se necessário, ou removemos tudo como solicitado)
                 [bAzul, bVermelha].forEach(p => {
                     if (p !== t.owner && Math.hypot(t.x - p.x, t.y - p.y) < BALL_RADIUS + 10) {
-                        p.takeDamage(0.1); 
-                        let kick = Math.atan2(p.y-t.y, p.x-t.x); p.vx += Math.cos(kick)*0.5; p.vy += Math.sin(kick)*0.5;
+                        // Apenas um pequeno empurrão físico sem causar dano (takeDamage removido)
+                        let kick = Math.atan2(p.y-t.y, p.x-t.x); p.vx += Math.cos(kick)*0.2; p.vy += Math.sin(kick)*0.2;
                     }
                 });
 
@@ -343,7 +345,6 @@
                     ctx.fillStyle = player.ultCharge >= 1 ? "#fff" : (player.type === 'VOID' ? "#a200ff" : color);
                     ctx.fillRect(xPos, arena.y + arena.h * (1 - player.ultCharge), 25, arena.h * player.ultCharge);
 
-                    // --- HP FORA (EXIBIDO EM NÚMEROS NO MODO AUTO) ---
                     if(controlMode === 'AUTO' && player.type !== 'TRAINING') {
                         ctx.fillStyle = color;
                         ctx.font = "bold 40px Arial";
