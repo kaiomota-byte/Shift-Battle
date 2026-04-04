@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shift Battle X</title>
     <style>
-        body { margin: 0; padding: 0; background-color: #020205; overflow: hidden; font-family: Arial, sans-serif; }
+        body { margin: 0; padding: 0; background-color: #020205; overflow: hidden; font-family: Arial, sans-serif; cursor: default; }
         canvas { display: block; }
     </style>
 </head>
@@ -26,12 +26,11 @@
         window.addEventListener('resize', setupCanvas);
         setupCanvas();
 
-        // --- AJUSTES DE VELOCIDADE (MAIS LENTO AINDA) ---
         const BALL_RADIUS = 22;
-        const GRAVITY = 0.10;      // Mais pesado
-        const FRICTION = 0.96;     // Mais atrito
-        const MOVE_SPEED = 0.4;    // Movimento mais lento
-        const ROTATION_SPEED = 0.10; // Giro da arma mais suave
+        const GRAVITY = 0.10;      
+        const FRICTION = 0.96;     
+        const MOVE_SPEED = 0.4;    
+        const ROTATION_SPEED = 0.10; 
         
         const CLASS_LIST = ['SWORD', 'WRENCH', 'BOMBERMAN', 'SHIELD', 'SNIPER', 'RAPIER', 'POISON'];
         
@@ -54,6 +53,28 @@
         let bAzul, bVermelha;
         let entities = { bullets: [], pools: [], bombs: [], explosions: [], turrets: [] };
         const keys = {};
+
+        // --- SISTEMA DE CLIQUE NO MOUSE ---
+        canvas.addEventListener('mousedown', e => {
+            if (gameState !== 'MENU') return;
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+
+            const checkSide = (startX, isP1) => {
+                CLASS_LIST.forEach((_, i) => {
+                    const bx = startX;
+                    const by = 230 + i * 40;
+                    const bw = 220;
+                    const bh = 35;
+                    if (mx >= bx && mx <= bx + bw && my >= by && my <= by + bh) {
+                        if (isP1) p1Index = i; else p2Index = i;
+                    }
+                });
+            };
+            checkSide(canvas.width * 0.18, true);
+            checkSide(canvas.width * 0.58, false);
+        });
 
         window.addEventListener('keydown', e => {
             keys[e.code] = true;
@@ -85,6 +106,7 @@
             let t2 = p2Index === -1 ? 'VOID' : (p2Index === -2 ? 'TRAINING' : CLASS_LIST[p2Index]);
             bAzul = new Ball(arena.x + 100, arena.y + arena.h/2, "#00f2ff", t1, true);
             bVermelha = new Ball(arena.x + arena.w - 100, arena.y + arena.h/2, "#ff0055", t2, false);
+            if(controlMode === 'AUTO') { bAzul.vx = 5; bAzul.vy = 5; bVermelha.vx = -5; bVermelha.vy = -5; }
             gameState = 'PLAYING';
         }
 
@@ -197,9 +219,10 @@
                 let a = Math.atan2(dy, dx), ov = BALL_RADIUS * 2 - d;
                 bAzul.x -= Math.cos(a)*ov/2; bAzul.y -= Math.sin(a)*ov/2;
                 bVermelha.x += Math.cos(a)*ov/2; bVermelha.y += Math.sin(a)*ov/2;
+                if(controlMode === 'AUTO') { bAzul.vx *= -1; bVermelha.vx *= -1; }
             }
             entities.turrets.forEach(t => { [bAzul, bVermelha].forEach(p => {
-                if(Math.hypot(p.x-t.x, p.y-t.y) < BALL_RADIUS+12){ p.vx*=-0.5; }
+                if(Math.hypot(p.x-t.x, p.y-t.y) < BALL_RADIUS+12){ p.vx*=-1; p.vy*=-1; }
             });});
         }
 
@@ -263,7 +286,6 @@
                     ctx.fillStyle = isSel ? colors.text : "#444"; ctx.font = "300 16px Arial";
                     ctx.fillText(isSel ? `>> ${name} <<` : name, x + 110, 253 + i*40);
                 });
-                // Minimalist VOID & TRAINING
                 const special = [{id: -1, name: 'VOID', c: 'VOID'}, {id: -2, name: 'TRAINING', c: 'TRAINING'}];
                 special.forEach((s, i) => {
                     const isS = (current === s.id); const sc = CLASS_COLORS[s.c];
