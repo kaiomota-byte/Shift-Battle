@@ -217,11 +217,9 @@
                 
                 ctx.shadowBlur = 0; ctx.fillStyle = "#fff"; ctx.font = "bold 14px Arial"; ctx.textAlign = "center";
                 
-                // --- LÓGICA DE EXIBIÇÃO DA VIDA ---
                 if(this.type === 'TRAINING') {
                     ctx.fillText(`TOTAL: ${this.totalDamageTaken.toFixed(1)}`, this.x, this.y - 35);
                 } else if(controlMode !== 'AUTO') {
-                    // Vida DENTRO no modo Manual/Bot
                     ctx.fillText(Math.ceil(this.hp), this.x, this.y + 5);
                 }
                 
@@ -285,6 +283,15 @@
                 let target = enemy(t.owner); t.angle = t.teleguied ? Math.atan2(target.y-t.y, target.x-t.x) : t.angle+0.08;
                 ctx.save(); ctx.translate(t.x, t.y); ctx.rotate(t.angle); ctx.fillStyle = "orange";
                 ctx.beginPath(); ctx.arc(0, 0, 10, 0, 7); ctx.fill(); ctx.fillStyle = "#fff"; ctx.fillRect(8, -2, 6, 4); ctx.restore();
+                
+                // REATIVADA COLISÃO DA TORRETA COM JOGADORES
+                [bAzul, bVermelha].forEach(p => {
+                    if (p !== t.owner && Math.hypot(t.x - p.x, t.y - p.y) < BALL_RADIUS + 10) {
+                        p.takeDamage(0.1); 
+                        let kick = Math.atan2(p.y-t.y, p.x-t.x); p.vx += Math.cos(kick)*0.5; p.vy += Math.sin(kick)*0.5;
+                    }
+                });
+
                 if(Date.now() - t.lastShot > 1100) {
                     entities.bullets.push({x:t.x, y:t.y, vx:Math.cos(t.angle)*10, vy:Math.sin(t.angle)*10, owner:t.owner});
                     t.lastShot = Date.now(); if(t.ammo !== -1) { t.ammo--; if(t.ammo <= 0) entities.turrets.splice(i, 1); }
@@ -327,27 +334,21 @@
                 checkCollisions(); updateEntities();
                 bAzul.update(); bVermelha.update(); bAzul.draw(); bVermelha.draw();
                 
-                // UI LATERAIS (Ult Charge + HP no Modo Auto)
                 [[bAzul, 25, "#00f2ff"], [bVermelha, canvas.width - 50, "#ff0055"]].forEach(cfg => {
                     const player = cfg[0];
                     const xPos = cfg[1];
                     const color = cfg[2];
 
-                    // Fundo da barra
                     ctx.fillStyle = "#111"; ctx.fillRect(xPos, arena.y, 25, arena.h);
-                    
-                    // Barra de Ultimate
                     ctx.fillStyle = player.ultCharge >= 1 ? "#fff" : (player.type === 'VOID' ? "#a200ff" : color);
                     ctx.fillRect(xPos, arena.y + arena.h * (1 - player.ultCharge), 25, arena.h * player.ultCharge);
 
-                    // --- HP FORA (MODO AUTO) ---
+                    // --- HP FORA (EXIBIDO EM NÚMEROS NO MODO AUTO) ---
                     if(controlMode === 'AUTO' && player.type !== 'TRAINING') {
-                        ctx.fillStyle = "#222"; 
-                        ctx.fillRect(xPos - (xPos < 100 ? -30 : 60), arena.y, 25, arena.h); // Barra de fundo HP
-                        
                         ctx.fillStyle = color;
-                        const hpPercent = player.hp / player.maxHp;
-                        ctx.fillRect(xPos - (xPos < 100 ? -30 : 60), arena.y + arena.h * (1 - hpPercent), 25, arena.h * hpPercent);
+                        ctx.font = "bold 40px Arial";
+                        ctx.textAlign = xPos < 100 ? "left" : "right";
+                        ctx.fillText(Math.ceil(player.hp), xPos < 100 ? xPos + 40 : xPos - 15, arena.y + 40);
                     }
                 });
 
