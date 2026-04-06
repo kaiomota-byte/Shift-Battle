@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shift Battle X - Balance Update</title>
+    <title>Shift Battle</title>
     <style>
         body { margin: 0; padding: 0; background-color: #020205; overflow: hidden; font-family: Arial, sans-serif; cursor: default; }
         canvas { display: block; }
@@ -186,7 +186,7 @@
                     enemy.vx += Math.cos(a) * psh; enemy.vy += Math.sin(a) * psh;
                     if (Date.now() - this.lastAction > 500) {
                         // DANO DA CHAVE DE FENDA REDUZIDO PARA 3
-                        enemy.takeDamage(this.type === 'SHIELD' ? 8 : (this.isBesta ? 15 : (this.type === 'WRENCH' ? 3 : 6)));
+                        enemy.takeDamage(this.type === 'SHIELD' ? 8 : (this.isBesta ? 15 : (this.type === 'WRENCH' ? 1 : 6)));
                         if(this.type === 'WRENCH') entities.turrets.push({x: tx, y: ty, angle: 0, lastShot: 0, owner: this, ammo: -1, teleguied: true});
                         this.lastAction = Date.now();
                     }
@@ -304,7 +304,7 @@
         function drawMenu() {
             ctx.fillStyle = "#020205"; ctx.fillRect(0,0,canvas.width,canvas.height);
             ctx.textAlign = "center"; ctx.fillStyle = "#00f2ff"; ctx.font = "300 50px Arial";
-            ctx.fillText("SHIFT BATTLE X", canvas.width/2, 110);
+            ctx.fillText("SHIFT BATTLE", canvas.width/2, 110);
             ctx.font = "300 16px Arial"; ctx.fillStyle = "#555";
             ctx.fillText(`MODO: ${controlMode} [M/B] | ARMAS: ${weaponBehavior} [G] | ESPAÇO: JOGAR`, canvas.width/2, 150);
 
