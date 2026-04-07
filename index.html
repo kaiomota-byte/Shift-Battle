@@ -76,8 +76,8 @@
                 if (e.key.toLowerCase() === 's') p1Index = (p1Index + 1) % CLASS_LIST.length;
                 if (e.key === 'ArrowUp') p2Index = (p2Index - 1 + CLASS_LIST.length) % CLASS_LIST.length;
                 if (e.key === 'ArrowDown') p2Index = (p2Index + 1) % CLASS_LIST.length;
-                if (e.key === '=') p1Index = -1; if (e.key === '2') p1Index = -2; 
-                if (e.key === 'z') p2Index = -1; if (e.key === '0') p2Index = -2; 
+                if (e.key === 'q') p1Index = -1; if (e.key === '2') p1Index = -2; 
+                if (e.key === 'm') p2Index = -1; if (e.key === '0') p2Index = -2; 
                 if (e.key.toLowerCase() === 'm') {
                     if (controlMode === 'BOT') controlMode = 'MANUAL';
                     else controlMode = (controlMode === 'MANUAL' ? 'AUTO' : 'MANUAL');
