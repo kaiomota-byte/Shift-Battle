@@ -258,7 +258,7 @@
                 ctx.beginPath(); ctx.arc(b.x, b.y, b.isSuper ? 12 : 4, 0, 7); ctx.fill();
                 [bAzul, bVermelha].forEach(p => {
                     if (p !== b.owner && Math.hypot(b.x - p.x, b.y - p.y) < BALL_RADIUS + (b.isSuper?10:0)) {
-                        p.takeDamage(b.isSuper ? 25 : 5); entities.bullets.splice(i, 1);
+                        p.takeDamage(b.isSuper ? 25 : 2.5); entities.bullets.splice(i, 1);
                     }
                 });
                 if(b.x < -200 || b.x > canvas.width + 200) entities.bullets.splice(i, 1);
