@@ -172,7 +172,7 @@
                         entities.bullets.push({x:this.x, y:this.y, vx:Math.cos(a)*18, vy:Math.sin(a)*18, owner:this});
                         this.lastAction = Date.now();
                     }
-                    if (this.type === 'BOMBERMAN' && Math.random() < 0.01) entities.bombs.push({x: this.x, y: this.y, timer: 75, owner: this});
+                    if (this.type === 'BOMBERMAN' && Math.random() < 0.01) entities.bombs.push({x: this.x, y: this.y, timer: 20, owner: this});
                     if (this.type === 'POISON' && (this.poisonUlt > 0 || Math.random() < 0.15)) {
                         entities.pools.push({x: this.x, y: this.y, timer: 180, owner: this});
                         if(this.poisonUlt > 0) this.poisonUlt--;
@@ -186,7 +186,7 @@
                     enemy.vx += Math.cos(a) * psh; enemy.vy += Math.sin(a) * psh;
                     if (Date.now() - this.lastAction > 500) {
                         // DANO DA CHAVE DE FENDA REDUZIDO PARA 3
-                        enemy.takeDamage(this.type === 'SHIELD' ? 8 : (this.isBesta ? 15 : (this.type === 'WRENCH' ? 3 : 6)));
+                        enemy.takeDamage(this.type === 'SHIELD' ? 8 : (this.isBesta ? 15 : (this.type === 'WRENCH' ? 1 : 2)));
                         if(this.type === 'WRENCH') entities.turrets.push({x: tx, y: ty, angle: 0, lastShot: 0, owner: this, ammo: -1, teleguied: true});
                         this.lastAction = Date.now();
                     }
