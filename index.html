@@ -130,7 +130,7 @@
                 if (this.type === 'VOID') { enemy.takeDamage(15); enemy.x = canvas.width/2; this.ultCharge = 1; }
                 if (this.type === 'TRAINING') { this.ultCharge = 1; this.totalDamageTaken = 0; this.hp = 999999; }
                 if (this.type === 'BOMBERMAN') { for(let i=0; i<12; i++) entities.bombs.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, timer: 50, owner: this}); }
-                if (this.type === 'WRENCH') { for(let i=0;i<6;i++){ let a=(Math.PI*2/6)*i; entities.turrets.push({x:enemy.x+Math.cos(a)*120, y:enemy.y+Math.sin(a)*120, angle:0, lastShot:0, owner:this, ammo:3, teleguied:true});}}
+                if (this.type === 'WRENCH') { for(let i=0;i<6;i++){ let a=(Math.PI*2/6)*i; entities.turrets.push({x:enemy.x+Math.cos(a)*120, y:enemy.y+Math.sin(a)*120, angle:0, lastShot:0, owner:this, ammo:1, teleguied:true});}}
                 if (this.type === 'SNIPER') { entities.bullets.push({x:this.x, y:this.y, vx:Math.cos(this.weaponAngle)*25, vy:Math.sin(this.weaponAngle)*25, owner:this, isSuper:true}); }
                 if (this.type === 'RAPIER' || this.type === 'SHIELD' || this.type === 'POISON') {
                     let a = Math.atan2(enemy.y - this.y, enemy.x - this.x);
@@ -187,7 +187,7 @@
                     if (Date.now() - this.lastAction > 500) {
                         // DANO DA CHAVE DE FENDA REDUZIDO PARA 3
                         enemy.takeDamage(this.type === 'SHIELD' ? 8 : (this.isBesta ? 15 : (this.type === 'WRENCH' ? 1 : 1)));
-                        if(this.type === 'WRENCH') entities.turrets.push({x: tx, y: ty, angle: 0, lastShot: 0, owner: this, ammo: -1, teleguied: true});
+                        if(this.type === 'WRENCH') entities.turrets.push({x: tx, y: ty, angle: 0, lastShot: 0, owner: this, ammo: -1, teleguied: false});
                         this.lastAction = Date.now();
                     }
                 }
