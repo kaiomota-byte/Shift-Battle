@@ -14,11 +14,9 @@
     (function() {
         const oldCanvas = document.querySelector('canvas');
         if (oldCanvas) oldCanvas.remove();
-
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         document.body.appendChild(canvas);
-
         const setupCanvas = () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
@@ -220,27 +218,16 @@ enemy.takeDamage(danoFinal);
                     ctx.restore();
                 }
 
-                // Procure onde desenha o HP (ctx.fillText(Math.ceil(this.hp)...) e mude para:
-ctx.save(); 
-    ctx.shadowBlur = (this.type === 'VOID') ? 20 : 5; // <--- O PROBLEMA ESTÁ AQUI
+       draw() {
+    // ... (outras lógicas de Void)
+
+    ctx.save(); 
+    ctx.shadowBlur = (this.type === 'VOID') ? 20 : 15; // <--- O PROBLEMA ESTÁ AQUI
     ctx.shadowColor = (this.type === 'VOID') ? "#a200ff" : this.color;
     
     ctx.beginPath(); ctx.arc(this.x, this.y, BALL_RADIUS, 0, Math.PI*2);
     ctx.fillStyle = this.color; ctx.fill();
-    
-ctx.strokeStyle = "#000"; // Cor do contorno
-ctx.lineWidth = 3;        // Grossura do contorno
-ctx.font = "bold 14px Arial"; 
-ctx.textAlign = "center";
-
-// Desenha o contorno primeiro, depois o texto
-ctx.strokeText(Math.ceil(this.hp), this.x, this.y + 5); 
-ctx.fillText(Math.ceil(this.hp), this.x, this.y + 5);
-                ctx.strokeStyle = (this.type === 'VOID') ? "#a200ff" : "#fff"; 
-                ctx.lineWidth = this.isBesta ? 5 : 2; ctx.stroke();
-                
-                ctx.shadowBlur = 0; ctx.fillStyle = "#fff"; ctx.font = "bold 14px Paris"; ctx.textAlign = "center";
-                
+          
                 if(this.type === 'TRAINING') {
                     ctx.fillText(`TOTAL: ${this.totalDamageTaken.toFixed(1)}`, this.x, this.y - 35);
                 } else if(controlMode !== 'AUTO') {
