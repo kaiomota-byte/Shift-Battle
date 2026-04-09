@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shift Battle X - Menu Update</title>
+    <title>Shift Battle X - Mega Balance</title>
     <style>
         body { margin: 0; padding: 0; background-color: #020205; overflow: hidden; font-family: Arial, sans-serif; cursor: default; }
         canvas { display: block; }
@@ -134,7 +134,7 @@
                 if (this.type === 'SNIPER') { entities.bullets.push({x:this.x, y:this.y, vx:Math.cos(this.weaponAngle)*25, vy:Math.sin(this.weaponAngle)*25, owner:this, isSuper:true}); }
                 if (this.type === 'RAPIER' || this.type === 'SHIELD' || this.type === 'POISON') {
                     let a = Math.atan2(enemy.y - this.y, enemy.x - this.x);
-                    this.vx = Math.cos(a) * 20; this.vy = Math.sin(a) * 20;
+                    this.vx = Math.cos(a) * 40; this.vy = Math.sin(a) * 40;
                     if(this.type === 'POISON') this.poisonUlt = 120;
                 }
             }
@@ -178,7 +178,8 @@
                         if(this.poisonUlt > 0) this.poisonUlt--;
                     }
                 }
-                this.ultCharge = Math.min(1, this.ultCharge + 0.002);
+              let chargeSpeed = (this.type === 'RAPIER') ? 0.01 : 0.001;
+            this.ultCharge = Math.min(1, this.ultCharge + chargeSpeed);
                 let wLen = this.type === 'RAPIER' ? 55 : 45;
                 let tx = this.x + Math.cos(this.weaponAngle) * wLen, ty = this.y + Math.sin(this.weaponAngle) * wLen;
                 if (this.type !== 'TRAINING' && Math.hypot(tx - enemy.x, ty - enemy.y) < BALL_RADIUS + 12) {
@@ -186,7 +187,19 @@
                     enemy.vx += Math.cos(a) * psh; enemy.vy += Math.sin(a) * psh;
                     if (Date.now() - this.lastAction > 500) {
                         // DANO DA CHAVE DE FENDA REDUZIDO PARA 3
-                        enemy.takeDamage(this.type === 'SHIELD' ? 8 : (this.isBesta ? 15 : (this.type === 'WRENCH' ? 1 : 2)));
+                      let danoFinal = 6; // Dano padrão
+
+if (this.type === 'RAPIER') {
+    danoFinal = 7; // Mude esse 12 para o dano que você quiser na Rapier
+} else if (this.type === 'SHIELD') {
+    danoFinal = 8;
+} else if (this.isBesta) {
+    danoFinal = 15;
+} else if (this.type === 'WRENCH') {
+    danoFinal = 3;
+}
+
+enemy.takeDamage(danoFinal);
                         if(this.type === 'WRENCH') entities.turrets.push({x: tx, y: ty, angle: 0, lastShot: 0, owner: this, ammo: -1, teleguied: true});
                         this.lastAction = Date.now();
                     }
