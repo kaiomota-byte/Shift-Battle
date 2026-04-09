@@ -129,7 +129,7 @@
                 if (this.type === 'SWORD') { this.isBesta = true; setTimeout(() => this.isBesta = false, 5000); }
                 if (this.type === 'VOID') { enemy.takeDamage(15); enemy.x = canvas.width/2; this.ultCharge = 1; }
                 if (this.type === 'TRAINING') { this.ultCharge = 1; this.totalDamageTaken = 0; this.hp = 999999; }
-                if (this.type === 'BOMBERMAN') { for(let i=0; i<12; i++) entities.bombs.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, timer: 20, owner: this}); }
+                if (this.type === 'BOMBERMAN') { for(let i=0; i<6; i++) entities.bombs.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, timer: 20, owner: this}); }
                 if (this.type === 'WRENCH') { for(let i=0;i<6;i++){ let a=(Math.PI*2/6)*i; entities.turrets.push({x:enemy.x+Math.cos(a)*120, y:enemy.y+Math.sin(a)*120, angle:0, lastShot:0, owner:this, ammo:3, teleguied:true});}}
                 if (this.type === 'SNIPER') { entities.bullets.push({x:this.x, y:this.y, vx:Math.cos(this.weaponAngle)*25, vy:Math.sin(this.weaponAngle)*25, owner:this, isSuper:true}); }
                 if (this.type === 'RAPIER' || this.type === 'SHIELD' || this.type === 'POISON') {
@@ -216,7 +216,7 @@
                 ctx.strokeStyle = (this.type === 'VOID') ? "#a200ff" : "#fff"; 
                 ctx.lineWidth = this.isBesta ? 5 : 2; ctx.stroke();
                 
-                ctx.shadowBlur = 0; ctx.fillStyle = "#fff"; ctx.font = "bold 14px Arial"; ctx.textAlign = "center";
+                ctx.shadowBlur = 0; ctx.fillStyle = "#fff"; ctx.font = "bold 14px Paris"; ctx.textAlign = "center";
                 
                 if(this.type === 'TRAINING') {
                     ctx.fillText(`TOTAL: ${this.totalDamageTaken.toFixed(1)}`, this.x, this.y - 35);
