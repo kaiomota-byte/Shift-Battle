@@ -220,12 +220,17 @@ enemy.takeDamage(danoFinal);
                     ctx.restore();
                 }
 
-                ctx.save(); 
-                ctx.shadowBlur = (this.type === 'VOID') ? 20 : 15; 
-                ctx.shadowColor = (this.type === 'VOID') ? "#a200ff" : this.color;
-                
-                ctx.beginPath(); ctx.arc(this.x, this.y, BALL_RADIUS, 0, Math.PI*2);
-                ctx.fillStyle = this.color; ctx.fill();
+                // Procure onde desenha o HP (ctx.fillText(Math.ceil(this.hp)...) e mude para:
+ctx.shadowBlur = 0; 
+ctx.fillStyle = "#fff"; 
+ctx.strokeStyle = "#000"; // Cor do contorno
+ctx.lineWidth = 3;        // Grossura do contorno
+ctx.font = "bold 14px Arial"; 
+ctx.textAlign = "center";
+
+// Desenha o contorno primeiro, depois o texto
+ctx.strokeText(Math.ceil(this.hp), this.x, this.y + 5); 
+ctx.fillText(Math.ceil(this.hp), this.x, this.y + 5);
                 ctx.strokeStyle = (this.type === 'VOID') ? "#a200ff" : "#fff"; 
                 ctx.lineWidth = this.isBesta ? 5 : 2; ctx.stroke();
                 
