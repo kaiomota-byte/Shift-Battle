@@ -222,9 +222,9 @@ enemy.takeDamage(danoFinal);
     // ... (outras lógicas de Void)
 
     ctx.save(); 
-    ctx.shadowBlur = (this.type === 'VOID') ? 20 : 5; // <--- O PROBLEMA ESTÁ AQUI
+    ctx.shadowBlur = (this.type === 'VOID') ? 20 : 15; // <--- O PROBLEMA ESTÁ AQUI
     ctx.shadowColor = (this.type === 'VOID') ? "#a200ff" : this.color;
-           
+    
     ctx.beginPath(); ctx.arc(this.x, this.y, BALL_RADIUS, 0, Math.PI*2);
     ctx.fillStyle = this.color; ctx.fill();
           
