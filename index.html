@@ -178,7 +178,7 @@
                     }
                 }
 
-                let chargeSpeed = (this.type === 'SNIPER') ? 0.001 : 0.003;
+                let chargeSpeed = (this.type === 'RAPIER') ? 0.001 : 0.003;
                 this.ultCharge = Math.min(1, this.ultCharge + chargeSpeed);
 
                 let wLen = this.type === 'RAPIER' ? 55 : 45;
@@ -188,7 +188,7 @@
                     enemy.vx += Math.cos(a) * psh; enemy.vy += Math.sin(a) * psh;
                     if (Date.now() - this.lastAction > 500) {
                         let danoFinal = 6; 
-                        if (this.type === 'RAPIER') { danoFinal = 12; } 
+                        if (this.type === 'RAPIER') { danoFinal = 6; } 
                         else if (this.type === 'SHIELD') { danoFinal = 8; } 
                         else if (this.isBesta) { danoFinal = 15; } 
                         else if (this.type === 'WRENCH') { danoFinal = 3; }
