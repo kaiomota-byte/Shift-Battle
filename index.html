@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shift Battle X - M</title>
+    <title>Shift Battle X - Mega Balance</title>
     <style>
         body { margin: 0; padding: 0; background-color: #020205; overflow: hidden; font-family: Arial, sans-serif; cursor: default; }
         canvas { display: block; }
@@ -132,7 +132,6 @@
                 if (this.type === 'SNIPER') { entities.bullets.push({x:this.x, y:this.y, vx:Math.cos(this.weaponAngle)*25, vy:Math.sin(this.weaponAngle)*25, owner:this, isSuper:true}); }
                 if (this.type === 'RAPIER' || this.type === 'SHIELD' || this.type === 'POISON') {
                     let a = Math.atan2(enemy.y - this.y, enemy.x - this.x);
-                    // VELOCIDADE DA ULT AUMENTADA PARA 40
                     this.vx = Math.cos(a) * 40; this.vy = Math.sin(a) * 40;
                     if(this.type === 'POISON') this.poisonUlt = 120;
                 }
@@ -168,7 +167,8 @@
                 if (this.type !== 'TRAINING') {
                     if (this.type === 'SNIPER' && Date.now() - this.lastAction > 1800) {
                         let a = Math.atan2(enemy.y-this.y, enemy.x-this.x);
-                        entities.bullets.push({x:this.x, y:this.y, vx:Math.cos(a)*18, vy:Math.sin(a)*18, owner:this});
+                        // MARCADO COMO SNIPER_BULLET
+                        entities.bullets.push({x:this.x, y:this.y, vx:Math.cos(a)*18, vy:Math.sin(a)*18, owner:this, bulletType: 'SNIPER_BULLET'});
                         this.lastAction = Date.now();
                     }
                     if (this.type === 'BOMBERMAN' && Math.random() < 0.01) entities.bombs.push({x: this.x, y: this.y, timer: 35, owner: this});
@@ -178,8 +178,7 @@
                     }
                 }
 
-                // CARREGAMENTO DA SNIPER AUMENTADO
-                let chargeSpeed = (this.type === 'SNIPER') ? 0.005 : 0.001;
+                let chargeSpeed = (this.type === 'SNIPER') ? 0.01 : 0.001;
                 this.ultCharge = Math.min(1, this.ultCharge + chargeSpeed);
 
                 let wLen = this.type === 'RAPIER' ? 55 : 45;
@@ -189,15 +188,10 @@
                     enemy.vx += Math.cos(a) * psh; enemy.vy += Math.sin(a) * psh;
                     if (Date.now() - this.lastAction > 500) {
                         let danoFinal = 6; 
-                        if (this.type === 'RAPIER') {
-                            danoFinal = 12; // DANO DA RAPIER AUMENTADO
-                        } else if (this.type === 'SHIELD') {
-                            danoFinal = 8;
-                        } else if (this.isBesta) {
-                            danoFinal = 15;
-                        } else if (this.type === 'WRENCH') {
-                            danoFinal = 3;
-                        }
+                        if (this.type === 'RAPIER') { danoFinal = 12; } 
+                        else if (this.type === 'SHIELD') { danoFinal = 8; } 
+                        else if (this.isBesta) { danoFinal = 15; } 
+                        else if (this.type === 'WRENCH') { danoFinal = 3; }
                         enemy.takeDamage(danoFinal);
                         if(this.type === 'WRENCH') entities.turrets.push({x: tx, y: ty, angle: 0, lastShot: 0, owner: this, ammo: -1, teleguied: true});
                         this.lastAction = Date.now();
@@ -206,54 +200,32 @@
             }
 
             draw() {
-                // 1. Efeito visual para a Classe VOID
                 if (this.type === 'VOID') {
                     ctx.save();
-                    ctx.strokeStyle = "#a200ff";
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, BALL_RADIUS + 5, 0, Math.PI * 2);
-                    ctx.stroke();
+                    ctx.strokeStyle = "#a200ff"; ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.arc(this.x, this.y, BALL_RADIUS + 5, 0, Math.PI * 2); ctx.stroke();
                     ctx.restore();
                 }
 
-                // 2. Desenho do Corpo da Bolinha (SEM BRILHO OFUSCANTE)
                 ctx.save();
                 ctx.shadowBlur = 0; 
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, BALL_RADIUS, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(this.x, this.y, BALL_RADIUS, 0, Math.PI * 2);
+                ctx.fillStyle = this.color; ctx.fill();
                 ctx.strokeStyle = (this.type === 'VOID') ? "#a200ff" : "#fff";
-                ctx.lineWidth = this.isBesta ? 5 : 2;
-                ctx.stroke();
+                ctx.lineWidth = this.isBesta ? 5 : 2; ctx.stroke();
 
-                // 3. Texto da VIDA (HP) com CONTORNO PRETO
-                ctx.fillStyle = "#fff";
-                ctx.font = "bold 16px Arial";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.strokeStyle = "#000";
-                ctx.lineWidth = 3;
+                ctx.fillStyle = "#fff"; ctx.font = "bold 16px Arial"; ctx.textAlign = "center";
+                ctx.textBaseline = "middle"; ctx.strokeStyle = "#000"; ctx.lineWidth = 3;
                 let hpText = (this.type === 'TRAINING') ? `TOTAL: ${this.totalDamageTaken.toFixed(0)}` : Math.ceil(this.hp);
                 
-                if(this.type === 'TRAINING') {
-                     ctx.strokeText(hpText, this.x, this.y - 35);
-                     ctx.fillText(hpText, this.x, this.y - 35);
-                } else if(controlMode !== 'AUTO') {
-                     ctx.strokeText(hpText, this.x, this.y);
-                     ctx.fillText(hpText, this.x, this.y);
-                }
+                if(this.type === 'TRAINING') { ctx.strokeText(hpText, this.x, this.y - 35); ctx.fillText(hpText, this.x, this.y - 35); } 
+                else if(controlMode !== 'AUTO') { ctx.strokeText(hpText, this.x, this.y); ctx.fillText(hpText, this.x, this.y); }
                 ctx.restore();
 
-                // 4. Desenho da ARMA
                 ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.weaponAngle);
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = (this.type === 'VOID') ? "#a200ff" : this.color;
-                ctx.strokeStyle = (this.type === 'VOID') ? "#a200ff" : this.color;
-                ctx.lineWidth = 5;
+                ctx.translate(this.x, this.y); ctx.rotate(this.weaponAngle);
+                ctx.shadowBlur = 10; ctx.shadowColor = (this.type === 'VOID') ? "#a200ff" : this.color;
+                ctx.strokeStyle = (this.type === 'VOID') ? "#a200ff" : this.color; ctx.lineWidth = 5;
 
                 if(this.type === 'SWORD') { ctx.beginPath(); ctx.moveTo(BALL_RADIUS, 0); ctx.lineTo(BALL_RADIUS + 40, 0); ctx.stroke(); }
                 else if(this.type === 'SHIELD') { ctx.beginPath(); ctx.arc(0, 0, BALL_RADIUS + 10, -1, 1); ctx.stroke(); }
@@ -285,8 +257,14 @@
                 ctx.beginPath(); ctx.arc(b.x, b.y, b.isSuper ? 12 : 4, 0, 7); ctx.fill();
                 [bAzul, bVermelha].forEach(p => {
                     if (p !== b.owner && Math.hypot(b.x - p.x, b.y - p.y) < BALL_RADIUS + (b.isSuper?10:0)) {
-                        // DANO DAS BALAS DA TORRETA/SNIPER AJUSTADO PARA 5
-                        p.takeDamage(b.isSuper ? 25 : 5); entities.bullets.splice(i, 1);
+                        
+                        // SEPARAÇÃO DE DANOS DE BALA
+                        let dmg = 5;
+                        if (b.isSuper) dmg = 25; // Sniper Ult
+                        else if (b.bulletType === 'SNIPER_BULLET') dmg = 10; // Sniper Normal
+                        else if (b.bulletType === 'TURRET_BULLET') dmg = 2; // Torreta Wrench
+                        
+                        p.takeDamage(dmg); entities.bullets.splice(i, 1);
                     }
                 });
                 if(b.x < -200 || b.x > canvas.width + 200) entities.bullets.splice(i, 1);
@@ -320,7 +298,8 @@
                 });
 
                 if(Date.now() - t.lastShot > 1100) {
-                    entities.bullets.push({x:t.x, y:t.y, vx:Math.cos(t.angle)*10, vy:Math.sin(t.angle)*10, owner:t.owner});
+                    // MARCADO COMO TURRET_BULLET
+                    entities.bullets.push({x:t.x, y:t.y, vx:Math.cos(t.angle)*10, vy:Math.sin(t.angle)*10, owner:t.owner, bulletType: 'TURRET_BULLET'});
                     t.lastShot = Date.now(); if(t.ammo !== -1) { t.ammo--; if(t.ammo <= 0) entities.turrets.splice(i, 1); }
                 }
             });
@@ -362,22 +341,15 @@
                 bAzul.update(); bVermelha.update(); bAzul.draw(); bVermelha.draw();
                 
                 [[bAzul, 25, "#00f2ff"], [bVermelha, canvas.width - 50, "#ff0055"]].forEach(cfg => {
-                    const player = cfg[0];
-                    const xPos = cfg[1];
-                    const color = cfg[2];
-
+                    const player = cfg[0]; const xPos = cfg[1]; const color = cfg[2];
                     ctx.fillStyle = "#111"; ctx.fillRect(xPos, arena.y, 25, arena.h);
                     ctx.fillStyle = player.ultCharge >= 1 ? "#fff" : (player.type === 'VOID' ? "#a200ff" : color);
                     ctx.fillRect(xPos, arena.y + arena.h * (1 - player.ultCharge), 25, arena.h * player.ultCharge);
-
                     if(controlMode === 'AUTO' && player.type !== 'TRAINING') {
-                        ctx.fillStyle = color;
-                        ctx.font = "bold 40px Arial";
-                        ctx.textAlign = xPos < 100 ? "left" : "right";
+                        ctx.fillStyle = color; ctx.font = "bold 40px Arial"; ctx.textAlign = xPos < 100 ? "left" : "right";
                         ctx.fillText(Math.ceil(player.hp), xPos < 100 ? xPos + 40 : xPos - 15, arena.y + 40);
                     }
                 });
-
                 if ((bAzul.hp <= 0 && bAzul.type !== 'TRAINING') || (bVermelha.hp <= 0 && bVermelha.type !== 'TRAINING')) resetToMenu();
             }
             requestAnimationFrame(loop);
