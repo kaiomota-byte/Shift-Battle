@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shift Battle X - Mega Balance</title>
+    <title>Shift Battle X - M</title>
     <style>
         body { margin: 0; padding: 0; background-color: #020205; overflow: hidden; font-family: Arial, sans-serif; cursor: default; }
         canvas { display: block; }
@@ -132,6 +132,7 @@
                 if (this.type === 'SNIPER') { entities.bullets.push({x:this.x, y:this.y, vx:Math.cos(this.weaponAngle)*25, vy:Math.sin(this.weaponAngle)*25, owner:this, isSuper:true}); }
                 if (this.type === 'RAPIER' || this.type === 'SHIELD' || this.type === 'POISON') {
                     let a = Math.atan2(enemy.y - this.y, enemy.x - this.x);
+                    // VELOCIDADE DA ULT AUMENTADA PARA 40
                     this.vx = Math.cos(a) * 40; this.vy = Math.sin(a) * 40;
                     if(this.type === 'POISON') this.poisonUlt = 120;
                 }
@@ -176,68 +177,84 @@
                         if(this.poisonUlt > 0) this.poisonUlt--;
                     }
                 }
-              let chargeSpeed = (this.type === 'RAPIER') ? 0.01 : 0.001;
-            this.ultCharge = Math.min(1, this.ultCharge + chargeSpeed);
+
+                // CARREGAMENTO DA SNIPER AUMENTADO
+                let chargeSpeed = (this.type === 'SNIPER') ? 0.01 : 0.001;
+                this.ultCharge = Math.min(1, this.ultCharge + chargeSpeed);
+
                 let wLen = this.type === 'RAPIER' ? 55 : 45;
                 let tx = this.x + Math.cos(this.weaponAngle) * wLen, ty = this.y + Math.sin(this.weaponAngle) * wLen;
                 if (this.type !== 'TRAINING' && Math.hypot(tx - enemy.x, ty - enemy.y) < BALL_RADIUS + 12) {
                     let psh = this.type === 'SHIELD' ? 12 : 4, a = Math.atan2(enemy.y - this.y, enemy.x - this.x);
                     enemy.vx += Math.cos(a) * psh; enemy.vy += Math.sin(a) * psh;
                     if (Date.now() - this.lastAction > 500) {
-                        // DANO DA CHAVE DE FENDA REDUZIDO PARA 3
-                      let danoFinal = 6; // Dano padrão
-
-if (this.type === 'RAPIER') {
-    danoFinal = 7; // Mude esse 12 para o dano que você quiser na Rapier
-} else if (this.type === 'SHIELD') {
-    danoFinal = 8;
-} else if (this.isBesta) {
-    danoFinal = 15;
-} else if (this.type === 'WRENCH') {
-    danoFinal = 3;
-}
-
-enemy.takeDamage(danoFinal);
+                        let danoFinal = 6; 
+                        if (this.type === 'RAPIER') {
+                            danoFinal = 12; // DANO DA RAPIER AUMENTADO
+                        } else if (this.type === 'SHIELD') {
+                            danoFinal = 8;
+                        } else if (this.isBesta) {
+                            danoFinal = 15;
+                        } else if (this.type === 'WRENCH') {
+                            danoFinal = 3;
+                        }
+                        enemy.takeDamage(danoFinal);
                         if(this.type === 'WRENCH') entities.turrets.push({x: tx, y: ty, angle: 0, lastShot: 0, owner: this, ammo: -1, teleguied: true});
                         this.lastAction = Date.now();
                     }
                 }
             }
+
             draw() {
+                // 1. Efeito visual para a Classe VOID
                 if (this.type === 'VOID') {
                     ctx.save();
-                    for(let i=0; i<3; i++) {
-                        ctx.strokeStyle = i % 2 === 0 ? "#a200ff" : "#00f2ff";
-                        ctx.lineWidth = 1;
-                        let ox = (Math.random()-0.5)*10;
-                        let oy = (Math.random()-0.5)*10;
-                        ctx.beginPath();
-                        ctx.arc(this.x + ox, this.y + oy, BALL_RADIUS + 2, 0, Math.PI*2);
-                        ctx.stroke();
-                    }
+                    ctx.strokeStyle = "#a200ff";
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, BALL_RADIUS + 5, 0, Math.PI * 2);
+                    ctx.stroke();
                     ctx.restore();
                 }
 
-       draw() {
-    // ... (outras lógicas de Void)
+                // 2. Desenho do Corpo da Bolinha (SEM BRILHO OFUSCANTE)
+                ctx.save();
+                ctx.shadowBlur = 0; 
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, BALL_RADIUS, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.strokeStyle = (this.type === 'VOID') ? "#a200ff" : "#fff";
+                ctx.lineWidth = this.isBesta ? 5 : 2;
+                ctx.stroke();
 
-    ctx.save(); 
-    ctx.shadowBlur = (this.type === 'VOID') ? 20 : 15; // <--- O PROBLEMA ESTÁ AQUI
-    ctx.shadowColor = (this.type === 'VOID') ? "#a200ff" : this.color;
-    
-    ctx.beginPath(); ctx.arc(this.x, this.y, BALL_RADIUS, 0, Math.PI*2);
-    ctx.fillStyle = this.color; ctx.fill();
-          
+                // 3. Texto da VIDA (HP) com CONTORNO PRETO
+                ctx.fillStyle = "#fff";
+                ctx.font = "bold 16px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.strokeStyle = "#000";
+                ctx.lineWidth = 3;
+                let hpText = (this.type === 'TRAINING') ? `TOTAL: ${this.totalDamageTaken.toFixed(0)}` : Math.ceil(this.hp);
+                
                 if(this.type === 'TRAINING') {
-                    ctx.fillText(`TOTAL: ${this.totalDamageTaken.toFixed(1)}`, this.x, this.y - 35);
+                     ctx.strokeText(hpText, this.x, this.y - 35);
+                     ctx.fillText(hpText, this.x, this.y - 35);
                 } else if(controlMode !== 'AUTO') {
-                    ctx.fillText(Math.ceil(this.hp), this.x, this.y + 5);
+                     ctx.strokeText(hpText, this.x, this.y);
+                     ctx.fillText(hpText, this.x, this.y);
                 }
-                
-                ctx.translate(this.x, this.y); ctx.rotate(this.weaponAngle);
-                ctx.shadowBlur = 20; ctx.shadowColor = (this.type === 'VOID') ? "#a200ff" : this.color; 
-                ctx.lineWidth = 5; ctx.strokeStyle = (this.type === 'VOID') ? "#a200ff" : this.color;
-                
+                ctx.restore();
+
+                // 4. Desenho da ARMA
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.weaponAngle);
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = (this.type === 'VOID') ? "#a200ff" : this.color;
+                ctx.strokeStyle = (this.type === 'VOID') ? "#a200ff" : this.color;
+                ctx.lineWidth = 5;
+
                 if(this.type === 'SWORD') { ctx.beginPath(); ctx.moveTo(BALL_RADIUS, 0); ctx.lineTo(BALL_RADIUS + 40, 0); ctx.stroke(); }
                 else if(this.type === 'SHIELD') { ctx.beginPath(); ctx.arc(0, 0, BALL_RADIUS + 10, -1, 1); ctx.stroke(); }
                 else if(this.type === 'RAPIER') { ctx.beginPath(); ctx.moveTo(BALL_RADIUS, 0); ctx.lineTo(BALL_RADIUS + 55, 0); ctx.stroke(); }
@@ -268,14 +285,14 @@ enemy.takeDamage(danoFinal);
                 ctx.beginPath(); ctx.arc(b.x, b.y, b.isSuper ? 12 : 4, 0, 7); ctx.fill();
                 [bAzul, bVermelha].forEach(p => {
                     if (p !== b.owner && Math.hypot(b.x - p.x, b.y - p.y) < BALL_RADIUS + (b.isSuper?10:0)) {
-                        p.takeDamage(b.isSuper ? 25 : 2.5); entities.bullets.splice(i, 1);
+                        // DANO DAS BALAS DA TORRETA/SNIPER AJUSTADO PARA 5
+                        p.takeDamage(b.isSuper ? 25 : 5); entities.bullets.splice(i, 1);
                     }
                 });
                 if(b.x < -200 || b.x > canvas.width + 200) entities.bullets.splice(i, 1);
             });
             entities.pools.forEach((p, i) => {
                 ctx.fillStyle = "rgba(170, 0, 255, 0.2)"; ctx.beginPath(); ctx.arc(p.x, p.y, 40, 0, 7); ctx.fill();
-                // DANO DA POISON REDUZIDO PARA 0.03
                 let vic = enemy(p.owner); if(Math.hypot(p.x - vic.x, p.y - vic.y) < 40) vic.takeDamage(0.03);
                 p.timer--; if(p.timer <= 0) entities.pools.splice(i, 1);
             });
@@ -296,10 +313,8 @@ enemy.takeDamage(danoFinal);
                 ctx.save(); ctx.translate(t.x, t.y); ctx.rotate(t.angle); ctx.fillStyle = "orange";
                 ctx.beginPath(); ctx.arc(0, 0, 10, 0, 7); ctx.fill(); ctx.fillStyle = "#fff"; ctx.fillRect(8, -2, 6, 4); ctx.restore();
                 
-                // DANO DE CONTATO DAS TORRETAS REMOVIDO (Só mantém o kick visual de repulsão se necessário, ou removemos tudo como solicitado)
                 [bAzul, bVermelha].forEach(p => {
                     if (p !== t.owner && Math.hypot(t.x - p.x, t.y - p.y) < BALL_RADIUS + 10) {
-                        // Apenas um pequeno empurrão físico sem causar dano (takeDamage removido)
                         let kick = Math.atan2(p.y-t.y, p.x-t.x); p.vx += Math.cos(kick)*0.2; p.vy += Math.sin(kick)*0.2;
                     }
                 });
@@ -313,7 +328,7 @@ enemy.takeDamage(danoFinal);
 
         function drawMenu() {
             ctx.fillStyle = "#020205"; ctx.fillRect(0,0,canvas.width,canvas.height);
-            ctx.textAlign = "center"; ctx.fillStyle = "#00f2ff"; ctx.font = "300 50px League Spartan";
+            ctx.textAlign = "center"; ctx.fillStyle = "#00f2ff"; ctx.font = "300 50px Arial";
             ctx.fillText("SHIFT BATTLE X", canvas.width/2, 110);
             ctx.font = "300 16px Arial"; ctx.fillStyle = "#555";
             ctx.fillText(`MODO: ${controlMode} [M/B] | ARMAS: ${weaponBehavior} [G] | ESPAÇO: JOGAR`, canvas.width/2, 150);
