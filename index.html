@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shift Battle X - Mega Balance</title>
+    <title>Shift Battle X - Bullets Revolution</title>
     <style>
         body { margin: 0; padding: 0; background-color: #020205; overflow: hidden; font-family: Arial, sans-serif; cursor: default; }
         canvas { display: block; }
@@ -178,7 +178,7 @@
                     }
                 }
 
-                let chargeSpeed = (this.type === 'SNIPER') ? 0.01 : 0.001;
+                let chargeSpeed = (this.type === 'SNIPER') ? 0.001 : 0.003;
                 this.ultCharge = Math.min(1, this.ultCharge + chargeSpeed);
 
                 let wLen = this.type === 'RAPIER' ? 55 : 45;
@@ -260,9 +260,9 @@
                         
                         // SEPARAÇÃO DE DANOS DE BALA
                         let dmg = 5;
-                        if (b.isSuper) dmg = 25; // Sniper Ult
-                        else if (b.bulletType === 'SNIPER_BULLET') dmg = 10; // Sniper Normal
-                        else if (b.bulletType === 'TURRET_BULLET') dmg = 2; // Torreta Wrench
+                        if (b.isSuper) dmg = 20; // Sniper Ult
+                        else if (b.bulletType === 'SNIPER_BULLET') dmg = 5; // Sniper Normal
+                        else if (b.bulletType === 'TURRET_BULLET') dmg = 1; // Torreta Wrench
                         
                         p.takeDamage(dmg); entities.bullets.splice(i, 1);
                     }
